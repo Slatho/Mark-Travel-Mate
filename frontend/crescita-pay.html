@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CRESCITA Pay | Wallet experience preview</title>
+<meta name="theme-color" content="#102a43"/><meta name="description" content="CRESCITA Pay wallet dashboard prototype for demonstrating the intended passenger experience."/><link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#fbfaf7;--surface:#f2f4ef;--card:#ffffff;--border:#e1e4dc;
+  --blue:#19475a;--blue-lt:#2d827c;--blue-dk:#102a43;--pale:#edf6f3;
+  --text:#172f40;--muted:#6e7d87;--err:#bf5c50;--ok:#31836f;
+  --orange:#d78b45;--purple:#8172a6;--teal:#2d827c;
+  --stripe:linear-gradient(135deg,#102a43 0%,#19475a 54%,#2d827c 100%);
+  --fd:'Cormorant Garamond',serif;--fb:'DM Sans',sans-serif;--fm:'Space Mono',monospace;
+  --r:14px;--rs:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh}
+button{font-family:var(--fb);cursor:pointer;border:none;outline:none}
+.hidden{display:none!important}
+.mono{font-family:var(--fm)}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--blue-dk);display:flex;flex-direction:column;padding:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-brand{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.sb-mark{width:44px;height:44px;background:linear-gradient(135deg,#2563eb,#60a5fa);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;font-family:var(--fd);box-shadow:0 4px 14px rgba(37,99,235,.5)}
+.sb-name{font-family:var(--fd);font-size:22px;font-weight:700;color:#fff}
+.sb-sub{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
+.sb-balance{padding:20px 24px;background:rgba(255,255,255,.06);margin:16px 12px;border-radius:var(--r);border:1px solid rgba(255,255,255,.1)}
+.sb-bal-lbl{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.sb-bal-val{font-family:var(--fd);font-size:32px;font-weight:700;color:#fff}
+.sb-bal-sub{font-size:12px;color:rgba(255,255,255,.4);margin-top:4px}
+.sb-nav{padding:8px 12px;flex:1}
+.sb-nav a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--rs);color:rgba(255,255,255,.6);font-size:14px;font-weight:500;margin-bottom:3px;cursor:pointer;transition:all .2s;text-decoration:none}
+.sb-nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-nav a.active{background:rgba(255,255,255,.14);color:#fff;font-weight:600}
+.sb-nav a .ni{font-size:18px;width:22px;text-align:center}
+.sb-section{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:14px 14px 6px;margin-top:4px}
+.sb-footer{padding:16px 24px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#60a5fa);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-uname{font-size:13px;font-weight:600;color:#fff}
+.sb-uemail{font-size:11px;color:rgba(255,255,255,.4)}
+
+/* ── MAIN ── */
+.main{background:var(--surface);display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(26,63,163,.06)}
+.topbar-title{font-family:var(--fd);font-size:24px;font-weight:700;color:var(--blue-dk)}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.btn-primary{padding:11px 24px;border-radius:50px;background:var(--stripe);color:#fff;font-weight:600;font-size:14px;box-shadow:0 4px 16px rgba(26,63,163,.25);transition:opacity .2s,transform .2s}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{padding:10px 20px;border-radius:50px;border:1.5px solid var(--border);background:#fff;color:var(--blue);font-weight:600;font-size:14px;transition:all .2s}
+.btn-secondary:hover{border-color:var(--blue-lt);background:var(--pale)}
+.content{padding:32px;flex:1}
+
+/* ── PAGES ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── DASHBOARD ── */
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:28px}
+.stat-card{background:#fff;border-radius:var(--r);padding:24px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(26,63,163,.05);transition:all .3s}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(26,63,163,.1)}
+.stat-card .ico{font-size:26px;margin-bottom:12px}
+.stat-card .val{font-family:var(--fd);font-size:30px;font-weight:700;color:var(--blue)}
+.stat-card .lbl{font-size:13px;color:var(--muted);margin-top:4px;font-weight:500}
+.stat-card .chg{font-size:12px;color:var(--ok);margin-top:3px;font-weight:600}
+.stat-card .chg.neg{color:var(--err)}
+
+.two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:20px}
+
+/* Quick actions */
+.quick-actions{background:#fff;border-radius:var(--r);padding:24px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(26,63,163,.05)}
+.qa-title{font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.qa-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:var(--rs);background:var(--surface);border:1.5px solid var(--border);cursor:pointer;transition:all .2s;color:var(--text)}
+.qa-btn:hover{border-color:var(--blue-lt);background:var(--pale);transform:translateY(-2px)}
+.qa-btn .qa-ico{width:44px;height:44px;border-radius:50%;background:var(--stripe);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(26,63,163,.25)}
+.qa-btn span{font-size:12px;font-weight:600;color:var(--blue-dk)}
+
+/* Recent transactions */
+.txn-card{background:#fff;border-radius:var(--r);padding:24px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(26,63,163,.05)}
+.txn-list{display:flex;flex-direction:column;gap:0}
+.txn-item{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
+.txn-item:last-child{border-bottom:none;padding-bottom:0}
+.txn-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.txn-icon.pay{background:#eff4ff}
+.txn-icon.topup{background:#f0fdf4}
+.txn-icon.send{background:#fff7ed}
+.txn-info{flex:1}
+.txn-name{font-size:14px;font-weight:600;color:var(--blue-dk)}
+.txn-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.txn-amt{font-family:var(--fd);font-size:18px;font-weight:700;text-align:right}
+.txn-amt.credit{color:var(--ok)}
+.txn-amt.debit{color:var(--blue-dk)}
+.txn-date{font-size:11px;color:var(--muted);text-align:right;margin-top:2px}
+
+/* ── METHODS PAGE ── */
+.methods-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:28px}
+.method-card{background:#fff;border-radius:var(--r);padding:28px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(26,63,163,.05);transition:all .3s;cursor:pointer}
+.method-card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(26,63,163,.12);border-color:rgba(37,99,235,.3)}
+.method-card.linked{border-color:var(--blue);background:var(--pale)}
+.mc-header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.mc-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.mc-icon.orange{background:rgba(234,88,12,.1)}
+.mc-icon.blue{background:var(--pale)}
+.mc-icon.purple{background:rgba(124,58,237,.1)}
+.mc-icon.teal{background:rgba(8,145,178,.1)}
+.mc-name{font-size:18px;font-weight:700;color:var(--blue-dk);font-family:var(--fd)}
+.mc-desc{font-size:13px;color:var(--muted)}
+.mc-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:50px;margin-top:12px}
+.mc-status.linked{background:rgba(22,163,74,.1);color:var(--ok)}
+.mc-status.unlinked{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.mc-number{font-family:var(--fm);font-size:13px;color:var(--muted);margin-top:8px}
+.mc-actions{display:flex;gap:10px;margin-top:16px}
+.mc-btn{padding:8px 18px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.mc-btn.primary{background:var(--stripe);color:#fff;box-shadow:0 3px 10px rgba(26,63,163,.2)}
+.mc-btn.outline{background:#fff;border:1.5px solid var(--border);color:var(--blue)}
+.mc-btn:hover{opacity:.85;transform:translateY(-1px)}
+
+/* ── CHECKOUT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,40,120,.7);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:20px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 30px 80px rgba(26,63,163,.25);animation:popIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:none}}
+.modal-head{background:var(--stripe);padding:24px 28px;display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-family:var(--fd);font-size:22px;font-weight:700;color:#fff}
+.modal-head p{font-size:13px;color:rgba(255,255,255,.7);margin-top:2px}
+.modal-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s}
+.modal-close:hover{background:rgba(255,255,255,.25)}
+.modal-body{padding:28px}
+.modal-amount{text-align:center;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.modal-amount .amt{font-family:var(--fd);font-size:48px;font-weight:700;color:var(--blue-dk)}
+.modal-amount .desc{font-size:14px;color:var(--muted);margin-top:4px}
+
+/* Payment method selector in modal */
+.pay-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.pay-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s}
+.pay-opt:hover{border-color:var(--blue-lt);background:var(--pale)}
+.pay-opt.selected{border-color:var(--blue);background:var(--pale)}
+.pay-opt-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid var(--border);background:#fff}
+.pay-opt-info{flex:1}
+.pay-opt-name{font-weight:700;font-size:14px;color:var(--blue-dk)}
+.pay-opt-desc{font-size:12px;color:var(--muted);margin-top:1px}
+.pay-opt-balance{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--ok)}
+.pay-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .2s}
+.pay-opt.selected .pay-radio{border-color:var(--blue);background:var(--blue);box-shadow:inset 0 0 0 3px #fff}
+
+/* Input fields */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.field input{padding:13px 16px;border-radius:var(--rs);background:#fff;border:1.5px solid var(--border);color:var(--text);font-family:var(--fb);font-size:14px;transition:all .2s}
+.field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.tel-row{display:flex;gap:10px}
+.tel-pre{padding:13px 14px;border-radius:var(--rs);background:var(--surface);border:1.5px solid var(--border);color:var(--muted);font-size:14px;flex-shrink:0;font-weight:600}
+
+/* PIN pad */
+.pin-section{margin-bottom:18px}
+.pin-label{font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:16px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:all .2s}
+.pin-dot.filled{background:var(--blue);border-color:var(--blue)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto}
+.pin-key{padding:16px;border-radius:var(--rs);background:var(--surface);border:1.5px solid var(--border);font-size:18px;font-weight:700;color:var(--blue-dk);cursor:pointer;text-align:center;transition:all .2s;font-family:var(--fm)}
+.pin-key:hover{background:var(--pale);border-color:var(--blue-lt)}
+.pin-key:active{transform:scale(.95)}
+.pin-key.del{font-size:14px;color:var(--muted)}
+.pin-key.zero{grid-column:2}
+
+/* Success */
+.pay-success{text-align:center;padding:20px 0}
+.success-anim{width:80px;height:80px;border-radius:50%;background:rgba(22,163,74,.1);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 18px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+.pay-success h3{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--blue-dk);margin-bottom:8px}
+.pay-success p{font-size:14px;color:var(--muted);margin-bottom:20px}
+.receipt-box{background:var(--surface);border-radius:var(--rs);padding:16px 20px;text-align:left;border:1px solid var(--border);margin-bottom:20px}
+.receipt-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)}
+.receipt-row:last-child{border:none;font-weight:700;font-size:15px}
+.receipt-row .rl{color:var(--muted)}
+.receipt-row .rv{font-weight:600;color:var(--blue-dk)}
+
+/* TOP UP PAGE */
+.topup-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.topup-card{background:#fff;border-radius:var(--r);padding:28px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(26,63,163,.05)}
+.topup-card h3{font-family:var(--fd);font-size:22px;font-weight:700;color:var(--blue-dk);margin-bottom:6px}
+.topup-card p{font-size:14px;color:var(--muted);margin-bottom:20px}
+.amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.amt-btn{padding:12px;border-radius:var(--rs);background:var(--surface);border:1.5px solid var(--border);font-size:14px;font-weight:700;color:var(--blue-dk);cursor:pointer;text-align:center;transition:all .2s;font-family:var(--fd)}
+.amt-btn:hover{border-color:var(--blue-lt);background:var(--pale)}
+.amt-btn.sel{border-color:var(--blue);background:var(--pale);color:var(--blue)}
+
+/* SEND PAGE */
+.send-wrap{max-width:520px}
+.send-card{background:#fff;border-radius:var(--r);padding:32px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(26,63,163,.07)}
+
+/* HISTORY */
+.history-filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.filter-btn{padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.filter-btn.active{background:var(--stripe);color:#fff;border-color:transparent}
+.history-card{background:#fff;border-radius:var(--r);padding:24px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(26,63,163,.05)}
+.history-month{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 0 8px;margin-top:8px}
+.history-month:first-child{margin-top:0}
+
+/* PROCESSING */
+.proc-overlay{position:fixed;inset:0;background:rgba(15,40,120,.85);backdrop-filter:blur(8px);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.proc-overlay.show{display:flex}
+.spin{width:52px;height:52px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-txt{font-family:var(--fd);font-size:22px;color:#fff;font-weight:600}
+.proc-sub{font-size:13px;color:rgba(255,255,255,.6)}
+
+/* Responsive */
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{display:none}.dash-grid{grid-template-columns:repeat(2,1fr)}.two-col,.methods-grid,.topup-grid{grid-template-columns:1fr}.qa-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+<style>
+:root{--fd:'Cormorant Garamond',serif;--fb:'DM Sans',sans-serif;--fm:'Space Mono',monospace}
+body{letter-spacing:-.01em}.sidebar{background:#102a43}.sb-mark,.sb-avatar{background:linear-gradient(135deg,#19475a,#2d827c);box-shadow:0 6px 18px rgba(16,42,67,.22)}.sb-name{font-family:var(--fb);font-size:19px;letter-spacing:.045em}.sb-sub{letter-spacing:.18em}.topbar{background:rgba(255,255,255,.93);backdrop-filter:blur(16px);border-color:#e1e4dc;box-shadow:0 4px 22px rgba(16,42,67,.04)}.topbar-title{font-family:var(--fd);font-size:29px;font-weight:600;color:#102a43}.main{background:#f2f4ef}.content{padding:28px 32px}.btn-primary{border-radius:11px;background:var(--stripe);box-shadow:0 8px 20px rgba(16,42,67,.13)}.btn-secondary{border-radius:11px;border-color:#dfe3da;color:#19475a}.stat-card,.quick-actions,.txn-card,.topup-card,.payment-panel,.settings-card,.history-card{border-color:#e1e4dc;box-shadow:0 5px 22px rgba(16,42,67,.04);border-radius:16px}.stat-card:hover{box-shadow:0 12px 28px rgba(16,42,67,.09)}.stat-card .val{color:#102a43}.qa-btn .qa-ico{background:var(--stripe);box-shadow:none}.sb-nav a.active{background:rgba(255,255,255,.13);border-left:2px solid #d9b56d}.wallet-demo-banner{display:flex;align-items:flex-start;gap:12px;margin:0 0 24px;padding:14px 17px;background:#fff7e7;border:1px solid #ead7a9;color:#6c592e;border-radius:13px}.wallet-demo-badge{font-size:9px;font-weight:800;letter-spacing:.15em;color:#fff;background:#b48a43;border-radius:6px;padding:7px 9px;flex-shrink:0}.wallet-demo-banner strong{display:block;font-size:12px;color:#6c592e;margin-bottom:3px}.wallet-demo-banner p{font-size:11px;line-height:1.6;color:#7c6a48}.field input,.field select{border-radius:10px;border-color:#dfe3da}.field input:focus,.field select:focus{border-color:#2d827c;box-shadow:0 0 0 3px rgba(45,130,124,.11)}.qa-title{color:#647982}.amount-grid .amt-btn.sel,.pay-opt.selected{border-color:#2d827c;background:#edf6f3}.progress-step.active{background:var(--stripe)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto;max-height:none}.sb-brand{padding:16px 18px}.sb-balance{margin:10px 14px}.sb-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}.sb-section{grid-column:1/-1}.sb-footer{display:none}.topbar{padding:14px 18px}.content{padding:18px}.wallet-demo-banner{padding:12px}.dash-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <div class="sb-mark">₵</div>
+        <div>
+          <div class="sb-name">Crescita Pay</div>
+          <div class="sb-sub">Digital Wallet</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-balance">
+      <div class="sb-bal-lbl">Wallet Balance</div>
+      <div class="sb-bal-val" id="sbBal">P 245.50</div>
+      <div class="sb-bal-sub">Available to spend</div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section">Main</div>
+      <a class="active" onclick="showPage('dashboard',this)"><span class="ni">🏠</span> Dashboard</a>
+      <a onclick="showPage('topup',this)"><span class="ni">➕</span> Top Up</a>
+      <a onclick="showPage('send',this)"><span class="ni">📤</span> Send Money</a>
+      <a onclick="showPage('history',this)"><span class="ni">📋</span> History</a>
+
+      <div class="sb-section">Settings</div>
+      <a onclick="showPage('methods',this)"><span class="ni">💳</span> Payment Methods</a>
+      <a onclick="showPage('security',this)"><span class="ni">🔒</span> Security</a>
+      <a href="index.html"><span class="ni">🚌</span> Back to Bookings</a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">K</div>
+        <div>
+          <div class="sb-uname">Demo Passenger</div>
+          <div class="sb-uemail">demo@crescita.local</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" onclick="openModal('topup-modal')">+ Top Up</button>
+        <button class="btn-primary" onclick="openModal('pay-modal')">₵ Pay Now</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="wallet-demo-banner"><span class="wallet-demo-badge">DEMO</span><div><strong>Wallet experience preview</strong><p>Balances, transactions and payment actions use sample data only. No money moves through this prototype. Never enter a real wallet PIN or real card details.</p></div></div>
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <div class="dash-grid">
+          <div class="stat-card"><div class="ico">💰</div><div class="val">P245.50</div><div class="lbl">Wallet Balance</div><div class="chg">↑ Topped up P100 today</div></div>
+          <div class="stat-card"><div class="ico">🎟️</div><div class="val">18</div><div class="lbl">Trips This Month</div><div class="chg">↑ 4 more than last month</div></div>
+          <div class="stat-card"><div class="ico">📊</div><div class="val">P312.00</div><div class="lbl">Total Spent (Month)</div><div class="chg neg">↓ P42 from last month</div></div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="quick-actions">
+              <div class="qa-title">Quick Actions</div>
+              <div class="qa-grid">
+                <div class="qa-btn" onclick="openModal('topup-modal')"><div class="qa-ico">➕</div><span>Top Up</span></div>
+                <div class="qa-btn" onclick="openModal('pay-modal')"><div class="qa-ico">₵</div><span>Pay</span></div>
+                <div class="qa-btn" onclick="showPage('send',document.querySelector('.sb-nav a:nth-child(4)'))"><div class="qa-ico">📤</div><span>Send</span></div>
+                <div class="qa-btn" onclick="showPage('history',document.querySelector('.sb-nav a:nth-child(5)'))"><div class="qa-ico">📋</div><span>History</span></div>
+              </div>
+            </div>
+
+            <div style="height:20px"></div>
+
+            <!-- Linked methods summary -->
+            <div class="quick-actions">
+              <div class="qa-title">Linked Payment Methods</div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border)">
+                  <span style="font-size:22px">🟠</span>
+                  <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--blue-dk)">Orange Money</div><div style="font-size:12px;color:var(--muted)">+267 72 *** 818</div></div>
+                  <span style="font-size:11px;font-weight:600;color:var(--ok);background:rgba(22,163,74,.1);padding:3px 10px;border-radius:50px">✓ Linked</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border)">
+                  <span style="font-size:22px">📱</span>
+                  <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--blue-dk)">MyZaka (Mascom)</div><div style="font-size:12px;color:var(--muted)">+267 74 *** 102</div></div>
+                  <span style="font-size:11px;font-weight:600;color:var(--ok);background:rgba(22,163,74,.1);padding:3px 10px;border-radius:50px">✓ Linked</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border)">
+                  <span style="font-size:22px">💜</span>
+                  <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--blue-dk)">Smega (BTC)</div><div style="font-size:12px;color:var(--muted)">Not linked</div></div>
+                  <span style="font-size:11px;font-weight:600;color:var(--muted);background:var(--surface);padding:3px 10px;border-radius:50px;border:1px solid var(--border)">+ Link</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="txn-card">
+            <div class="qa-title" style="margin-bottom:16px">Recent Transactions</div>
+            <div class="txn-list" id="txnList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP UP PAGE -->
+      <div class="page" id="page-topup">
+        <div class="topup-grid">
+          <div class="topup-card">
+            <h3>Top Up Wallet</h3>
+            <p>Preview a wallet top-up flow using sample values. No actual funds will be added.</p>
+            <div class="qa-title">Select Amount</div>
+            <div class="amount-grid">
+              <button class="amt-btn" onclick="selAmt(this,'50')">P50</button>
+              <button class="amt-btn sel" onclick="selAmt(this,'100')">P100</button>
+              <button class="amt-btn" onclick="selAmt(this,'200')">P200</button>
+              <button class="amt-btn" onclick="selAmt(this,'500')">P500</button>
+              <button class="amt-btn" onclick="selAmt(this,'1000')">P1000</button>
+              <button class="amt-btn" onclick="selAmt(this,'custom')">Custom</button>
+            </div>
+            <div class="field" id="customAmtField" style="display:none">
+              <label>Enter Amount (P)</label>
+              <input type="number" id="customAmt" placeholder="e.g. 350" min="10" max="5000"/>
+            </div>
+            <div class="qa-title" style="margin-top:16px">Pay With</div>
+            <div class="pay-opts" style="margin-bottom:20px">
+              <div class="pay-opt selected" onclick="selTopupMethod(this,'orange')">
+                <div class="pay-opt-icon">🟠</div>
+                <div class="pay-opt-info"><div class="pay-opt-name">Orange Money</div><div class="pay-opt-desc">+267 72 *** 818</div></div>
+                <div class="pay-radio"></div>
+              </div>
+              <div class="pay-opt" onclick="selTopupMethod(this,'myzaka')">
+                <div class="pay-opt-icon">📱</div>
+                <div class="pay-opt-info"><div class="pay-opt-name">MyZaka (Mascom)</div><div class="pay-opt-desc">+267 74 *** 102</div></div>
+                <div class="pay-radio"></div>
+              </div>
+              <div class="pay-opt" onclick="selTopupMethod(this,'card')">
+                <div class="pay-opt-icon">💳</div>
+                <div class="pay-opt-info"><div class="pay-opt-name">Debit / Credit Card</div><div class="pay-opt-desc">Visa or Mastercard</div></div>
+                <div class="pay-radio"></div>
+              </div>
+            </div>
+            <button class="btn-primary" style="width:100%;padding:14px;border-radius:var(--rs);font-size:15px" onclick="doTopup()">Top Up Wallet →</button>
+          </div>
+
+          <div>
+            <div class="topup-card" style="margin-bottom:20px">
+              <h3 style="margin-bottom:4px">Wallet Benefits</h3>
+              <p style="margin-bottom:16px">Why keep funds in Crescita Pay?</p>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:20px">⚡</span><div><div style="font-weight:600;font-size:14px;color:var(--blue-dk)">Instant Checkout</div><div style="font-size:13px;color:var(--muted)">No PIN entry every time — one tap to pay</div></div></div>
+                <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:20px">🎁</span><div><div style="font-weight:600;font-size:14px;color:var(--blue-dk)">Loyalty Rewards</div><div style="font-size:13px;color:var(--muted)">Earn points on every trip and redeem for free rides</div></div></div>
+                <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:20px">🔒</span><div><div style="font-weight:600;font-size:14px;color:var(--blue-dk)">Secure & Encrypted</div><div style="font-size:13px;color:var(--muted)">Bank-grade security on all transactions</div></div></div>
+                <div style="display:flex;gap:10px;align-items:flex-start"><span style="font-size:20px">📊</span><div><div style="font-weight:600;font-size:14px;color:var(--blue-dk)">Spending Insights</div><div style="font-size:13px;color:var(--muted)">Track your travel spend in one place</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEND PAGE -->
+      <div class="page" id="page-send">
+        <div class="send-wrap">
+          <div class="send-card">
+            <h3 style="font-family:var(--fd);font-size:24px;color:var(--blue-dk);margin-bottom:6px">Send Money</h3>
+            <p style="font-size:14px;color:var(--muted);margin-bottom:24px">Send funds to another Crescita Pay user instantly.</p>
+            <div class="field"><label>Recipient Phone or Email</label><input type="text" id="sendTo" placeholder="+267 71 234 567 or email@example.com"/></div>
+            <div class="field"><label>Amount (BWP)</label><div style="position:relative"><input type="number" id="sendAmt" placeholder="0.00" min="1" style="padding-left:36px"/><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:var(--fd);font-size:16px;font-weight:700;color:var(--muted)">P</span></div></div>
+            <div class="field"><label>Note (optional)</label><input type="text" id="sendNote" placeholder="e.g. Bus fare share"/></div>
+            <div style="background:var(--surface);border-radius:var(--rs);padding:14px 16px;margin-bottom:20px;border:1px solid var(--border);display:flex;justify-content:space-between">
+              <span style="font-size:14px;color:var(--muted)">Available balance</span>
+              <span style="font-family:var(--fd);font-size:18px;font-weight:700;color:var(--ok)">P245.50</span>
+            </div>
+            <button class="btn-primary" style="width:100%;padding:14px;border-radius:var(--rs);font-size:15px" onclick="doSend()">Send Money →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORY PAGE -->
+      <div class="page" id="page-history">
+        <div class="history-filters">
+          <button class="filter-btn active" onclick="filterTxn(this,'all')">All</button>
+          <button class="filter-btn" onclick="filterTxn(this,'payment')">Payments</button>
+          <button class="filter-btn" onclick="filterTxn(this,'topup')">Top Ups</button>
+          <button class="filter-btn" onclick="filterTxn(this,'send')">Sent</button>
+        </div>
+        <div class="history-card" id="historyList"></div>
+      </div>
+
+      <!-- METHODS PAGE -->
+      <div class="page" id="page-methods">
+        <div class="methods-grid">
+          <div class="method-card linked">
+            <div class="mc-header">
+              <div class="mc-icon orange">🟠</div>
+              <div><div class="mc-name">Orange Money</div><div class="mc-desc">Botswana's leading mobile money</div></div>
+            </div>
+            <div class="mc-number">+267 72 *** 818</div>
+            <div class="mc-status linked">✓ Linked & Active</div>
+            <div class="mc-actions">
+              <button class="mc-btn outline" onclick="alert('Unlink Orange Money?')">Unlink</button>
+              <button class="mc-btn primary" onclick="openTopupWith('orange')">Top Up</button>
+            </div>
+          </div>
+          <div class="method-card linked">
+            <div class="mc-header">
+              <div class="mc-icon blue">📱</div>
+              <div><div class="mc-name">MyZaka</div><div class="mc-desc">Mascom mobile wallet</div></div>
+            </div>
+            <div class="mc-number">+267 74 *** 102</div>
+            <div class="mc-status linked">✓ Linked & Active</div>
+            <div class="mc-actions">
+              <button class="mc-btn outline" onclick="alert('Unlink MyZaka?')">Unlink</button>
+              <button class="mc-btn primary" onclick="openTopupWith('myzaka')">Top Up</button>
+            </div>
+          </div>
+          <div class="method-card">
+            <div class="mc-header">
+              <div class="mc-icon purple">💜</div>
+              <div><div class="mc-name">Smega (BTC)</div><div class="mc-desc">Botswana Telecommunications</div></div>
+            </div>
+            <div class="mc-number" style="color:var(--muted)">Not linked</div>
+            <div class="mc-status unlinked">Not Linked</div>
+            <div class="mc-actions">
+              <button class="mc-btn primary" onclick="linkMethod('smega')">+ Link Smega</button>
+            </div>
+          </div>
+          <div class="method-card">
+            <div class="mc-header">
+              <div class="mc-icon teal">💳</div>
+              <div><div class="mc-name">Debit / Credit Card</div><div class="mc-desc">Visa or Mastercard</div></div>
+            </div>
+            <div class="mc-number" style="color:var(--muted)">No card saved</div>
+            <div class="mc-status unlinked">Not Added</div>
+            <div class="mc-actions">
+              <button class="mc-btn primary" onclick="linkMethod('card')">+ Add Card</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY PAGE -->
+      <div class="page" id="page-security">
+        <div style="max-width:520px">
+          <div class="send-card">
+            <h3 style="font-family:var(--fd);font-size:24px;color:var(--blue-dk);margin-bottom:6px">Security Settings</h3>
+            <p style="font-size:14px;color:var(--muted);margin-bottom:24px">Manage your PIN and account security.</p>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border)">
+                <div><div style="font-weight:600;font-size:14px">Transaction PIN</div><div style="font-size:12px;color:var(--muted)">4-digit PIN for payments</div></div>
+                <button class="mc-btn primary" onclick="alert('Change PIN flow')">Change PIN</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border)">
+                <div><div style="font-weight:600;font-size:14px">Biometric Login</div><div style="font-size:12px;color:var(--muted)">Fingerprint / Face ID</div></div>
+                <div style="width:44px;height:24px;border-radius:12px;background:var(--ok);cursor:pointer;position:relative"><div style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;box-shadow:0 1px 4px rgba(0,0,0,.2)"></div></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border)">
+                <div><div style="font-weight:600;font-size:14px">Payment Limit</div><div style="font-size:12px;color:var(--muted)">Max P500 per transaction</div></div>
+                <button class="mc-btn outline" onclick="alert('Change limit')">Edit</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border)">
+                <div><div style="font-weight:600;font-size:14px">Transaction Notifications</div><div style="font-size:12px;color:var(--muted)">SMS + App alerts</div></div>
+                <div style="width:44px;height:24px;border-radius:12px;background:var(--ok);cursor:pointer;position:relative"><div style="width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;box-shadow:0 1px 4px rgba(0,0,0,.2)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end content -->
+  </main>
+</div>
+
+<!-- ── TOPUP MODAL ── -->
+<div class="modal-overlay" id="topup-modal" onclick="closeModalOut(event,'topup-modal')">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Top Up Wallet</h3><p>Add funds via Orange Money, MyZaka, Smega or Card</p></div>
+      <div class="modal-close" onclick="closeModal('topup-modal')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-amount">
+        <div class="amt">P<span id="tuAmt">100</span></div>
+        <div class="desc">Entering wallet balance</div>
+      </div>
+      <div class="pay-opts" id="tuOpts">
+        <div class="pay-opt selected" onclick="selOpt(this,'orange_topup')"><div class="pay-opt-icon">🟠</div><div class="pay-opt-info"><div class="pay-opt-name">Orange Money</div><div class="pay-opt-desc">Push to +267 72 *** 818</div></div><div class="pay-radio"></div></div>
+        <div class="pay-opt" onclick="selOpt(this,'myzaka_topup')"><div class="pay-opt-icon">📱</div><div class="pay-opt-info"><div class="pay-opt-name">MyZaka (Mascom)</div><div class="pay-opt-desc">Push to +267 74 *** 102</div></div><div class="pay-radio"></div></div>
+        <div class="pay-opt" onclick="selOpt(this,'smega_topup')"><div class="pay-opt-icon">💜</div><div class="pay-opt-info"><div class="pay-opt-name">Smega (BTC)</div><div class="pay-opt-desc">Not linked — link first</div></div><div class="pay-radio"></div></div>
+        <div class="pay-opt" onclick="selOpt(this,'card_topup')"><div class="pay-opt-icon">💳</div><div class="pay-opt-info"><div class="pay-opt-name">Debit / Credit Card</div><div class="pay-opt-desc">Visa or Mastercard</div></div><div class="pay-radio"></div></div>
+      </div>
+      <button class="btn-primary" style="width:100%;padding:14px;border-radius:var(--rs);font-size:15px" onclick="confirmTopup()">Confirm Top Up →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PAY MODAL ── -->
+<div class="modal-overlay" id="pay-modal" onclick="closeModalOut(event,'pay-modal')">
+  <div class="modal" id="payModal">
+    <!-- Step 1: Choose method -->
+    <div id="payStep1">
+      <div class="modal-head">
+        <div><h3>₵ Crescita Pay</h3><p>Choose how to pay</p></div>
+        <div class="modal-close" onclick="closeModal('pay-modal')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-amount">
+          <div class="amt">P<span id="payAmt">8.00</span></div>
+          <div class="desc" id="payDesc">Bus Rank → Game City • 1 seat</div>
+        </div>
+        <div class="pay-opts">
+          <div class="pay-opt selected" onclick="selOpt(this,'wallet')">
+            <div class="pay-opt-icon">₵</div>
+            <div class="pay-opt-info"><div class="pay-opt-name">Crescita Pay Wallet</div><div class="pay-opt-desc">Instant — no PIN needed</div></div>
+            <div class="pay-opt-balance">P245.50</div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-opt" onclick="selOpt(this,'orange')">
+            <div class="pay-opt-icon">🟠</div>
+            <div class="pay-opt-info"><div class="pay-opt-name">Orange Money</div><div class="pay-opt-desc">Push to +267 72 *** 818</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-opt" onclick="selOpt(this,'myzaka')">
+            <div class="pay-opt-icon">📱</div>
+            <div class="pay-opt-info"><div class="pay-opt-name">MyZaka (Mascom)</div><div class="pay-opt-desc">Push to +267 74 *** 102</div></div>
+            <div class="pay-radio"></div>
+          </div>
+          <div class="pay-opt" onclick="selOpt(this,'card')">
+            <div class="pay-opt-icon">💳</div>
+            <div class="pay-opt-info"><div class="pay-opt-name">Debit / Credit Card</div><div class="pay-opt-desc">Visa or Mastercard</div></div>
+            <div class="pay-radio"></div>
+          </div>
+        </div>
+        <button class="btn-primary" style="width:100%;padding:14px;border-radius:var(--rs);font-size:15px" onclick="goPayStep2()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: PIN (for wallet / mobile money) -->
+    <div id="payStep2" class="hidden">
+      <div class="modal-head">
+        <div><h3>Enter PIN</h3><p id="pinDesc">Simulate confirmation in this prototype</p></div>
+        <div class="modal-close" onclick="closeModal('pay-modal')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div class="pin-section">
+          <div class="pin-label" id="pinLabel">Enter a demo PIN to preview the flow</div>
+          <div class="pin-dots" id="pinDots">
+            <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+            <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+          </div>
+          <div class="pin-pad">
+            <button class="pin-key" onclick="pinKey('1')">1</button>
+            <button class="pin-key" onclick="pinKey('2')">2</button>
+            <button class="pin-key" onclick="pinKey('3')">3</button>
+            <button class="pin-key" onclick="pinKey('4')">4</button>
+            <button class="pin-key" onclick="pinKey('5')">5</button>
+            <button class="pin-key" onclick="pinKey('6')">6</button>
+            <button class="pin-key" onclick="pinKey('7')">7</button>
+            <button class="pin-key" onclick="pinKey('8')">8</button>
+            <button class="pin-key" onclick="pinKey('9')">9</button>
+            <button class="pin-key zero" onclick="pinKey('0')">0</button>
+            <button class="pin-key del" onclick="pinDel()">⌫</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Card details -->
+    <div id="payStep3" class="hidden">
+      <div class="modal-head">
+        <div><h3>Card Details</h3><p>Payment provider not connected</p></div>
+        <div class="modal-close" onclick="closeModal('pay-modal')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div class="field"><label>Name on Card</label><input id="cname" type="text" placeholder="KEFILWE GABANAKGOSI"/></div>
+        <div class="field"><label>Card Number</label><input id="cnum" type="text" placeholder="4242 4242 4242 4242 (test only)" maxlength="19" oninput="fcrd(this)"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Expiry</label><input id="cexp" type="text" placeholder="MM/YY" maxlength="5" oninput="fexp(this)"/></div>
+          <div class="field"><label>CVV</label><input id="ccvv" type="text" placeholder="123" maxlength="3"/></div>
+        </div>
+        <button class="btn-primary" style="width:100%;padding:14px;border-radius:var(--rs);font-size:15px;margin-top:4px" onclick="processCard()">🔒 Pay P<span id="cardPayAmt">8.00</span></button>
+      </div>
+    </div>
+
+    <!-- Step 4: Success -->
+    <div id="payStep4" class="hidden">
+      <div class="modal-head" style="background:linear-gradient(135deg,#15803d,#16a34a)">
+        <div><h3>Payment Complete!</h3><p>Your booking is confirmed</p></div>
+        <div class="modal-close" onclick="closeModal('pay-modal')">✕</div>
+      </div>
+      <div class="modal-body">
+        <div class="pay-success">
+          <div class="success-anim">✅</div>
+          <h3>Demo payment complete</h3>
+          <p id="successDesc">Payment from Crescita Wallet</p>
+          <div class="receipt-box" id="receiptBox"></div>
+          <button class="btn-primary" style="width:100%;padding:13px;border-radius:var(--rs)" onclick="closeModal('pay-modal');resetPayModal()">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESSING -->
+<div class="proc-overlay" id="proc">
+  <div class="spin"></div>
+  <div class="proc-txt" id="ptxt">Processing...</div>
+  <div class="proc-sub" id="psub">Please wait</div>
+</div>
+
+<script>
+const API = 'http://localhost:3000/api';
+let walletBalance = 245.50;
+let selectedPayMethod = 'wallet';
+let pinInput = '';
+
+// ── TRANSACTIONS DATA ──────────────────────────────
+const TXN_DATA = [
+  {type:'payment',icon:'🚌',name:'Bus Rank → Game City',meta:'BTC Tours • B101CTM',date:'Today, 9:41 AM',amt:-8.00},
+  {type:'topup',icon:'💰',name:'Top Up via Orange Money',meta:'From +267 72 480 818',date:'Today, 8:12 AM',amt:100.00},
+  {type:'payment',icon:'🚌',name:'CBD → Riverwalk Express',meta:'BTC Tours • B102CTM',date:'Yesterday, 5:23 PM',amt:-6.50},
+  {type:'payment',icon:'🚌',name:'CBD → Airport Shuttle',meta:'BTC Tours • B201LUX',date:'Yesterday, 10:00 AM',amt:-25.00},
+  {type:'send',icon:'📤',name:'Sent to Thabo M.',meta:'+267 71 234 567',date:'Mon, 3:14 PM',amt:-15.00},
+  {type:'topup',icon:'💰',name:'Top Up via MyZaka',meta:'From +267 74 109 102',date:'Mon, 9:00 AM',amt:200.00},
+  {type:'payment',icon:'🚌',name:'CBD → Molapo Loop',meta:'BTC Tours • B101CTM',date:'Sun, 7:45 AM',amt:-7.00},
+  {type:'payment',icon:'🚌',name:'CBD → Rail Park',meta:'Tura Travel • T301TUR',date:'Sat, 4:30 PM',amt:-5.00},
+  {type:'topup',icon:'💰',name:'Top Up via Card',meta:'Visa **** 4242',date:'Fri, 11:00 AM',amt:50.00},
+];
+
+function renderTxns(filter='all'){
+  const filtered = filter==='all' ? TXN_DATA : TXN_DATA.filter(t=>t.type===filter);
+  const list = document.getElementById(filter==='all'?'txnList':'historyList') || document.getElementById('txnList');
+
+  if(document.getElementById('txnList') && filter==='all'){
+    document.getElementById('txnList').innerHTML = filtered.slice(0,5).map(t=>`
+      <div class="txn-item">
+        <div class="txn-icon ${t.type}">${t.icon}</div>
+        <div class="txn-info"><div class="txn-name">${t.name}</div><div class="txn-meta">${t.meta}</div></div>
+        <div><div class="txn-amt ${t.amt>0?'credit':'debit'}">${t.amt>0?'+':''}P${Math.abs(t.amt).toFixed(2)}</div><div class="txn-date">${t.date}</div></div>
+      </div>`).join('');
+  }
+
+  if(document.getElementById('historyList')){
+    document.getElementById('historyList').innerHTML = `
+      <div class="history-month">April 2026</div>
+      ${filtered.map(t=>`
+        <div class="txn-item">
+          <div class="txn-icon ${t.type}">${t.icon}</div>
+          <div class="txn-info"><div class="txn-name">${t.name}</div><div class="txn-meta">${t.meta}</div></div>
+          <div><div class="txn-amt ${t.amt>0?'credit':'debit'}">${t.amt>0?'+':''}P${Math.abs(t.amt).toFixed(2)}</div><div class="txn-date">${t.date}</div></div>
+        </div>`).join('')}`;
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────
+function showPage(id, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles = {dashboard:'Dashboard',topup:'Top Up Wallet',send:'Send Money',history:'Transaction History',methods:'Payment Methods',security:'Security'};
+  document.getElementById('pageTitle').textContent = titles[id]||id;
+  if(id==='history') renderTxns('all');
+}
+
+// ── MODALS ────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show');if(id==='pay-modal')resetPayModal();}
+function closeModalOut(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+function openTopupWith(method){
+  openModal('topup-modal');
+  document.querySelectorAll('#tuOpts .pay-opt').forEach(o=>o.classList.remove('selected'));
+  document.querySelector(`#tuOpts .pay-opt[onclick*="${method}"]`)?.classList.add('selected');
+}
+
+// ── QUICK ACTIONS ────────────────────────────────
+function selOpt(el, method){
+  el.closest('.pay-opts,.modal-body').querySelectorAll('.pay-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayMethod = method;
+}
+
+function selTopupMethod(el, method){
+  document.querySelectorAll('.topup-card .pay-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selAmt(btn, val){
+  document.querySelectorAll('.amt-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  const cf = document.getElementById('customAmtField');
+  if(val==='custom'){cf.style.display='flex';}
+  else{cf.style.display='none';document.getElementById('tuAmt').textContent=val;}
+}
+
+// ── TOP UP ────────────────────────────────────────
+function doTopup(){
+  const sel = document.querySelector('.topup-card .pay-opt.selected');
+  if(!sel){alert('Please select a payment method');return;}
+  const method = sel.querySelector('.pay-opt-name').textContent;
+  const amtSel = document.querySelector('.amt-btn.sel');
+  const amt = amtSel?.textContent.replace('P','')||'100';
+  const actual = parseInt(amt)||100;
+  showProc(`Processing ${method}...`, 'A request has been sent to your phone');
+  setTimeout(()=>{
+    hideProc();
+    walletBalance += actual;
+    document.getElementById('sbBal').textContent = 'P ' + walletBalance.toFixed(2);
+    TXN_DATA.unshift({type:'topup',icon:'💰',name:`Top Up via ${method}`,meta:'Just now',date:'Just now',amt:actual});
+    renderTxns('all');
+    alert(`✅ P${actual} added to your Crescita Pay wallet!`);
+  }, 3500);
+}
+
+function confirmTopup(){
+  const sel = document.querySelector('#tuOpts .pay-opt.selected');
+  if(!sel)return;
+  const method = sel.querySelector('.pay-opt-name').textContent;
+  const amt = document.getElementById('tuAmt').textContent;
+  closeModal('topup-modal');
+  showProc(`Sending request to ${method}...`, 'Enter your mobile money PIN to confirm');
+  setTimeout(()=>{
+    hideProc();
+    walletBalance += parseFloat(amt);
+    document.getElementById('sbBal').textContent = 'P ' + walletBalance.toFixed(2);
+    TXN_DATA.unshift({type:'topup',icon:'💰',name:`Top Up via ${method}`,meta:'Just now',date:'Just now',amt:parseFloat(amt)});
+    renderTxns('all');
+    alert(`✅ P${amt} added to your Crescita Pay wallet!`);
+  }, 3500);
+}
+
+// ── PAYMENT FLOW ──────────────────────────────────
+function goPayStep2(){
+  ['payStep1','payStep2','payStep3','payStep4'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  if(selectedPayMethod==='card'){
+    document.getElementById('cardPayAmt').textContent = document.getElementById('payAmt').textContent;
+    document.getElementById('payStep3').classList.remove('hidden');
+  } else if(selectedPayMethod==='wallet'){
+    document.getElementById('pinLabel').textContent = 'Enter a demo PIN to preview the flow';
+    document.getElementById('pinDesc').textContent = 'Simulate confirmation in this prototype';
+    document.getElementById('payStep2').classList.remove('hidden');
+  } else {
+    const methods = {orange:'Orange Money',myzaka:'MyZaka (Mascom)',smega:'Smega (BTC)'};
+    document.getElementById('pinLabel').textContent = `Enter your ${methods[selectedPayMethod]} PIN`;
+    document.getElementById('pinDesc').textContent = `No external request is sent in demo mode`;
+    document.getElementById('payStep2').classList.remove('hidden');
+  }
+  pinInput='';
+  for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.remove('filled');
+}
+
+function pinKey(k){
+  if(pinInput.length>=4)return;
+  pinInput+=k;
+  document.getElementById('pd'+(pinInput.length-1)).classList.add('filled');
+  if(pinInput.length===4) setTimeout(confirmPinPayment, 300);
+}
+
+function pinDel(){
+  if(!pinInput.length)return;
+  document.getElementById('pd'+(pinInput.length-1)).classList.remove('filled');
+  pinInput=pinInput.slice(0,-1);
+}
+
+function confirmPinPayment(){
+  const amt = parseFloat(document.getElementById('payAmt').textContent);
+  const desc = document.getElementById('payDesc').textContent;
+  const methods = {wallet:'Crescita Pay Wallet',orange:'Orange Money',myzaka:'MyZaka',smega:'Smega'};
+  showProc('Verifying PIN...','Authorising payment...');
+  setTimeout(()=>{
+    hideProc();
+    walletBalance -= (selectedPayMethod==='wallet'?amt:0);
+    if(selectedPayMethod==='wallet') document.getElementById('sbBal').textContent='P '+walletBalance.toFixed(2);
+    showSuccess(amt, desc, methods[selectedPayMethod]||selectedPayMethod);
+    TXN_DATA.unshift({type:'payment',icon:'🚌',name:desc,meta:'Just now',date:'Just now',amt:-amt});
+    renderTxns('all');
+  }, 2000);
+}
+
+function processCard(){
+  if(!document.getElementById('cname').value||document.getElementById('cnum').value.replace(/\s/g,'').length<16){
+    alert('Please complete all card details');return;
+  }
+  const amt = parseFloat(document.getElementById('payAmt').textContent);
+  const desc = document.getElementById('payDesc').textContent;
+  showProc('Processing Card Payment...','Payment provider not connected');
+  setTimeout(()=>{
+    hideProc();
+    showSuccess(amt, desc, 'Debit/Credit Card');
+    TXN_DATA.unshift({type:'payment',icon:'🚌',name:desc,meta:'Demo card flow',date:'Just now',amt:-amt});
+    renderTxns('all');
+  }, 2500);
+}
+
+function showSuccess(amt, desc, method){
+  ['payStep1','payStep2','payStep3'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById('payStep4').classList.remove('hidden');
+  document.getElementById('successDesc').textContent=`Paid via ${method}`;
+  const ref='CTM-'+Math.random().toString(36).slice(2,10).toUpperCase();
+  document.getElementById('receiptBox').innerHTML=`
+    <div class="receipt-row"><span class="rl">Description</span><span class="rv">${desc}</span></div>
+    <div class="receipt-row"><span class="rl">Method</span><span class="rv">${method}</span></div>
+    <div class="receipt-row"><span class="rl">Reference</span><span class="rv mono">${ref}</span></div>
+    <div class="receipt-row"><span class="rl">Total Paid</span><span class="rv" style="color:var(--ok)">P${amt.toFixed(2)}</span></div>`;
+}
+
+function resetPayModal(){
+  ['payStep2','payStep3','payStep4'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById('payStep1').classList.remove('hidden');
+  pinInput='';
+  for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.remove('filled');
+  document.querySelectorAll('#pay-modal .pay-opt').forEach((o,i)=>o.classList.toggle('selected',i===0));
+  selectedPayMethod='wallet';
+}
+
+// ── SEND ──────────────────────────────────────────
+function doSend(){
+  const to=document.getElementById('sendTo').value.trim();
+  const amt=parseFloat(document.getElementById('sendAmt').value);
+  if(!to){alert('Enter recipient phone or email');return;}
+  if(!amt||amt<=0){alert('Enter a valid amount');return;}
+  if(amt>walletBalance){alert('Insufficient wallet balance');return;}
+  showProc('Sending money...','Transferring from wallet');
+  setTimeout(()=>{
+    hideProc();
+    walletBalance-=amt;
+    document.getElementById('sbBal').textContent='P '+walletBalance.toFixed(2);
+    TXN_DATA.unshift({type:'send',icon:'📤',name:'Sent to '+to,meta:'From Crescita Wallet',date:'Just now',amt:-amt});
+    renderTxns('all');
+    document.getElementById('sendTo').value='';
+    document.getElementById('sendAmt').value='';
+    document.getElementById('sendNote').value='';
+    alert(`✅ P${amt.toFixed(2)} sent to ${to}!`);
+  }, 2000);
+}
+
+// ── LINK METHOD ───────────────────────────────────
+function linkMethod(m){
+  const names={smega:'Smega (BTC)',card:'Debit/Credit Card'};
+  const num=prompt(`Enter your ${names[m]} number to link:`);
+  if(num){
+    showProc(`Verifying ${names[m]}...`,'Sending verification code');
+    setTimeout(()=>{hideProc();alert(`✅ ${names[m]} linked successfully!`);},2000);
+  }
+}
+
+// ── HISTORY FILTER ────────────────────────────────
+function filterTxn(btn, filter){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTxns(filter);
+}
+
+// ── PROCESSING ────────────────────────────────────
+function showProc(t,s){document.getElementById('ptxt').textContent=t;document.getElementById('psub').textContent=s;document.getElementById('proc').classList.add('show')}
+function hideProc(){document.getElementById('proc').classList.remove('show')}
+
+// ── CARD FORMATTING ───────────────────────────────
+function fcrd(el){let v=el.value.replace(/\D/g,'').slice(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim()}
+function fexp(el){let v=el.value.replace(/\D/g,'');if(v.length>=2)v=v.slice(0,2)+'/'+v.slice(2,4);el.value=v}
+
+// ── INIT ──────────────────────────────────────────
+renderTxns('all');
+</script>
+</body>
+</html>
